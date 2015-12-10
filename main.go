@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"html/template"
+	"time"
 )
 
 func echoInput(w http.ResponseWriter, r *http.Request) {
@@ -14,8 +15,10 @@ func echoInput(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, nil)
 	} else {
 		r.ParseForm()
-		fmt.Println("username:", r.Form["username"])
-		fmt.Println("password:", r.Form["password"])
+		username := template.HTMLEscapeString(r.Form.Get("username"))
+		password := template.HTMLEscapeString(r.Form.Get("password"))
+		fmt.Println("username:", username)
+		fmt.Println("password:", password)
 	}
 }
 

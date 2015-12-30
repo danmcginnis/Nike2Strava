@@ -69,7 +69,7 @@ type nikeDataComplete struct {
   }
 }
 
-func main() {
+func wrangleJSON() {
 	var nike nikeDataComplete
   json.Unmarshal(NikeBasic1, &nike)
   json.Unmarshal(NikeActDetails, &nike)

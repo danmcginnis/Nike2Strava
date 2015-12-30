@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-var ActDetails = "https://api.nike.com/v1/me/sport/activities/"
-
 type nikeDataSimple struct {
 	Data []struct {
 		ActivityId    string
@@ -71,14 +69,17 @@ type nikeDataComplete struct {
 	}
 }
 
-func wrangleJSON() {
+func wrangleJSON(token string) {
+  
 	var nikeList nikeDataSimple
+ 	var ActDetails = "https://api.nike.com/v1/me/sport/activities/"
+
 	json.Unmarshal([]byte(NikeBasic20), &nikeList)
 	for _, m := range nikeList.Data {
 		if m.ActivityType == "RUN" {
 			var nikeActs nikeDataComplete
 
-			url := ActDetails + m.ActivityId + "?access_token=" + Token
+			url := ActDetails + m.ActivityId + "?access_token=" + token
 			res, err := http.Get(url)
 
 			if err != nil {
@@ -94,7 +95,7 @@ func wrangleJSON() {
 			json.Unmarshal(body, &nikeActs)
 
 			if nikeActs.IsGPSActivity {
-				gpsUrl := ActDetails + m.ActivityId + "/gps?access_token=" + Token
+				gpsUrl := ActDetails + m.ActivityId + "/gps?access_token=" + token
 				res, err = http.Get(gpsUrl)
 
 				if err != nil {
@@ -108,14 +109,14 @@ func wrangleJSON() {
 				json.Unmarshal(body, &nikeActs)
 			}
 
-			fmt.Println(nikeActs.ActivityId)
-			fmt.Println(nikeActs.MetricSummary.Distance, "k")
-			fmt.Println("Activity has GPS data:", nikeActs.IsGPSActivity)
+			fmt.Println("Activity ID:", nikeActs.ActivityId)
+			fmt.Println("Distance:", nikeActs.MetricSummary.Distance, "km")
 			fmt.Println("GPS read interval is", nikeActs.IntervalMetric, strings.ToLower(nikeActs.IntervalUnit))
 			for _, m := range nikeActs.Tags {
-				fmt.Println(strings.ToLower(m.TagType), strings.ToLower(m.TagValue))
+				fmt.Println(strings.ToLower(m.TagType), ":", strings.ToLower(m.TagValue))
 			}
 			if nikeActs.IsGPSActivity {
+				fmt.Println("Activity has GPS data:", nikeActs.IsGPSActivity)
 				fmt.Println(nikeActs.Waypoints[0].Latitude, nikeActs.Waypoints[0].Longitude)
 			}
 			fmt.Println()

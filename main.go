@@ -23,7 +23,7 @@ func echoInput(w http.ResponseWriter, r *http.Request) {
 
 
 func main() {
-	wrangleJSON()
+	wrangleJSON(Token)
 	/*http.HandleFunc("/", echoInput)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {

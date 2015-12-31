@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+const baseURL = "https://api.nike.com/v1/me/sport/activities"
+
 //var loginURL = "https://developer.nike.com/content/nike-developer-cq/us/en_us/index/login.html"
 
 type nikeDataSimple struct {
@@ -79,15 +81,15 @@ type nikeDataComplete struct {
 }*/
 
 func makeActivityURL(token string, count int) string {
-	return "https://api.nike.com/v1/me/sport/activities?access_token=" + token + "&count=" + strconv.Itoa(count)
+	return baseURL + "?access_token=" + token + "&count=" + strconv.Itoa(count)
 }
 
 func makeDetailsURL(token string, activityId string) string {
-	return "https://api.nike.com/v1/me/sport/activities/" + activityId + "?access_token=" + token
+	return baseURL + "/" + activityId + "?access_token=" + token
 }
 
 func makeGpsURL(token string, activityId string) string {
-	return "https://api.nike.com/v1/me/sport/activities/" + activityId + "/gps?access_token=" + token
+	return baseURL + "/" + activityId + "/gps?access_token=" + token
 }
 
 func wrangleJSON(token string) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -77,20 +78,30 @@ type nikeDataComplete struct {
 	fmt.Println(nike)
 }*/
 
-func wrangleJSON(token string) {
-  
-	var nikeList nikeDataSimple
-	var ActList = "https://api.nike.com/v1/me/sport/activities?access_token=ShQeydt0MoWobetAG39mWX26Yhss&count=20"
- 	var ActDetails = "https://api.nike.com/v1/me/sport/activities/"
+func makeActivityURL(token string, count int) string {
+	return "https://api.nike.com/v1/me/sport/activities?access_token=" + token + "&count=" + strconv.Itoa(count)
+}
 
-	url := ActList
+func makeDetailsURL(token string, activityId string) string {
+	return "https://api.nike.com/v1/me/sport/activities/" + activityId + "?access_token=" + token
+}
+
+func makeGpsURL(token string, activityId string) string {
+	return "https://api.nike.com/v1/me/sport/activities/" + activityId + "/gps?access_token=" + token
+}
+
+func wrangleJSON(token string) {
+
+	var nikeList nikeDataSimple
+
+	url := makeActivityURL(token, 20)
 	res, err := http.Get(url)
 
 	if err != nil {
 		panic(err.Error())
 	}
 	body, err := ioutil.ReadAll(res.Body)
-	
+
 	if err != nil {
 		panic(err.Error())
 	}
@@ -100,7 +111,7 @@ func wrangleJSON(token string) {
 		if m.ActivityType == "RUN" {
 			var nikeActs nikeDataComplete
 
-			url := ActDetails + m.ActivityId + "?access_token=" + token
+			url := makeDetailsURL(token, m.ActivityId)
 			res, err := http.Get(url)
 
 			if err != nil {
@@ -116,7 +127,7 @@ func wrangleJSON(token string) {
 			json.Unmarshal(body, &nikeActs)
 
 			if nikeActs.IsGPSActivity {
-				gpsUrl := ActDetails + m.ActivityId + "/gps?access_token=" + token
+				gpsUrl := makeGpsURL(token, m.ActivityId)
 				res, err = http.Get(gpsUrl)
 
 				if err != nil {

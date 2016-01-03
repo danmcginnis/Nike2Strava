@@ -23,5 +23,8 @@ _testmain.go
 *.test
 *.prof
 
+# Things added by me
 testData.go
 .vscode/
+*.GPX
+.DS_Store

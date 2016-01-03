@@ -92,6 +92,22 @@ func makeGpsURL(token string, activityID string) string {
 	return baseURL + "/" + activityID + "/gps?access_token=" + token
 }
 
+func (nikeActs nikeDataComplete) printDetails() {
+    fmt.Println("Activity ID:", nikeActs.ActivityId)
+	fmt.Println("Distance:", nikeActs.MetricSummary.Distance, "km")
+	fmt.Println("Date:", nikeActs.StartTime)
+	for _, m := range nikeActs.Tags {
+		fmt.Println(strings.ToLower(m.TagType), ":", strings.ToLower(m.TagValue))
+	}
+	if nikeActs.IsGPSActivity {
+		fmt.Println("Activity has GPS data:", nikeActs.IsGPSActivity)
+		fmt.Println("GPS read interval is", nikeActs.IntervalMetric, strings.ToLower(nikeActs.IntervalUnit))
+		fmt.Println(nikeActs.Waypoints[0].Latitude, nikeActs.Waypoints[0].Longitude)
+		fmt.Println(nikeActs.Waypoints[1].Latitude, nikeActs.Waypoints[1].Longitude)
+	}
+	fmt.Println()
+}
+
 func getDetails(token string, activityID string, debug bool) {
 	var nikeActs nikeDataComplete
 
@@ -123,20 +139,7 @@ func getDetails(token string, activityID string, debug bool) {
 			json.Unmarshal(body, &nikeActs)
 		}
 	}
-
-	fmt.Println("Activity ID:", nikeActs.ActivityId)
-	fmt.Println("Distance:", nikeActs.MetricSummary.Distance, "km")
-	fmt.Println("Date:", nikeActs.StartTime)
-	for _, m := range nikeActs.Tags {
-		fmt.Println(strings.ToLower(m.TagType), ":", strings.ToLower(m.TagValue))
-	}
-	if nikeActs.IsGPSActivity {
-		fmt.Println("Activity has GPS data:", nikeActs.IsGPSActivity)
-		fmt.Println("GPS read interval is", nikeActs.IntervalMetric, strings.ToLower(nikeActs.IntervalUnit))
-		fmt.Println(nikeActs.Waypoints[0].Latitude, nikeActs.Waypoints[0].Longitude)
-		fmt.Println(nikeActs.Waypoints[1].Latitude, nikeActs.Waypoints[1].Longitude)
-	}
-	fmt.Println()
+    nikeActs.printDetails()
 }
 
 func wrangleJSON(token string, numRecords int, debug bool) {
@@ -144,8 +147,10 @@ func wrangleJSON(token string, numRecords int, debug bool) {
 	var nikeList nikeDataSimple
 
 	if debug {
-		json.Unmarshal(NikeBasic5, &nikeList)
+		json.Unmarshal(NikeBasic1, &nikeList)
+        fmt.Println("Using Local Test Data")
 	} else {
+        fmt.Println("\nUsing live data from Nike+ API\n")
 		url := makeActivityURL(token, numRecords)
 		res, err := http.Get(url)
 

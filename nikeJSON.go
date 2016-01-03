@@ -92,39 +92,39 @@ func makeGpsURL(token string, activityID string) string {
 	return baseURL + "/" + activityID + "/gps?access_token=" + token
 }
 
-func getDetails(token string, activityID string) {
-    var nikeActs nikeDataComplete
+func getDetails(token string, activityID string, debug bool) {
+	var nikeActs nikeDataComplete
 
-	url := makeDetailsURL(token, activityID)
-	res, err := http.Get(url)
-
-	if err != nil {
-		panic(err.Error())
-	}
-    
-    body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	json.Unmarshal(body, &nikeActs)
-
-    if nikeActs.IsGPSActivity {
-		gpsURL := makeGpsURL(token, activityID)
-		res, err = http.Get(gpsURL)
+	if debug {
+		json.Unmarshal(NikeActDetails, &nikeActs)
+		json.Unmarshal(NikeActGPS, &nikeActs)
+	} else {
+		url := makeDetailsURL(token, activityID)
+		res, err := http.Get(url)
 		if err != nil {
 			panic(err.Error())
 		}
-   		
-        body, err = ioutil.ReadAll(res.Body)
+		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			panic(err.Error())
 		}
-		
-        json.Unmarshal(body, &nikeActs)
+		json.Unmarshal(body, &nikeActs)
+
+		if nikeActs.IsGPSActivity {
+			gpsURL := makeGpsURL(token, activityID)
+			res, err = http.Get(gpsURL)
+			if err != nil {
+				panic(err.Error())
+			}
+			body, err = ioutil.ReadAll(res.Body)
+			if err != nil {
+				panic(err.Error())
+			}
+			json.Unmarshal(body, &nikeActs)
+		}
 	}
-    fmt.Println("Activity ID:", nikeActs.ActivityId)
+
+	fmt.Println("Activity ID:", nikeActs.ActivityId)
 	fmt.Println("Distance:", nikeActs.MetricSummary.Distance, "km")
 	fmt.Println("Date:", nikeActs.StartTime)
 	for _, m := range nikeActs.Tags {
@@ -133,32 +133,37 @@ func getDetails(token string, activityID string) {
 	if nikeActs.IsGPSActivity {
 		fmt.Println("Activity has GPS data:", nikeActs.IsGPSActivity)
 		fmt.Println("GPS read interval is", nikeActs.IntervalMetric, strings.ToLower(nikeActs.IntervalUnit))
-        fmt.Println(nikeActs.Waypoints[0].Latitude, nikeActs.Waypoints[0].Longitude)
-        fmt.Println(nikeActs.Waypoints[1].Latitude, nikeActs.Waypoints[1].Longitude)
+		fmt.Println(nikeActs.Waypoints[0].Latitude, nikeActs.Waypoints[0].Longitude)
+		fmt.Println(nikeActs.Waypoints[1].Latitude, nikeActs.Waypoints[1].Longitude)
 	}
 	fmt.Println()
 }
 
-func wrangleJSON(token string) {
+func wrangleJSON(token string, numRecords int, debug bool) {
 
 	var nikeList nikeDataSimple
 
-	url := makeActivityURL(token, 20)
-	res, err := http.Get(url)
+	if debug {
+		json.Unmarshal(NikeBasic5, &nikeList)
+	} else {
+		url := makeActivityURL(token, numRecords)
+		res, err := http.Get(url)
 
-	if err != nil {
-		panic(err.Error())
+		if err != nil {
+			panic(err.Error())
+		}
+		body, err := ioutil.ReadAll(res.Body)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		json.Unmarshal(body, &nikeList)
 	}
-	body, err := ioutil.ReadAll(res.Body)
 
-	if err != nil {
-		panic(err.Error())
-	}
-
-	json.Unmarshal(body, &nikeList)
 	for _, m := range nikeList.Data {
 		if m.ActivityType == "RUN" {
-			getDetails(token, m.ActivityId)
+			getDetails(token, m.ActivityId, debug)
 		}
 	}
 }

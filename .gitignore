@@ -27,4 +27,4 @@ _testmain.go
 testData.go
 .vscode/
 *.GPX
-.DS_Store
+*.DS_Store

@@ -22,3 +22,9 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Things added by me
+testData.go
+.vscode/
+*.GPX
+*.DS_Store

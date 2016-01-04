@@ -3,9 +3,8 @@ package main
 import (
 	"net/http"
 	"fmt"
-	"log"
+	//"log"
 	"html/template"
-	"time"
 )
 
 func echoInput(w http.ResponseWriter, r *http.Request) {
@@ -24,9 +23,10 @@ func echoInput(w http.ResponseWriter, r *http.Request) {
 
 
 func main() {
-	http.HandleFunc("/", echoInput)
+	wrangleJSON(Token, 20, true)
+	/*http.HandleFunc("/", echoInput)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
-	}
+	} */
 }

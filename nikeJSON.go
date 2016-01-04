@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const baseURL = "https://api.nike.com/v1/me/sport/activities"
@@ -55,7 +56,7 @@ type nikeDataComplete struct {
 		TagValue string
 	}
 	Metrics []struct {
-		IntervalMetric float64
+		IntervalMetric int16
 		IntervalUnit   string
 		MetricType     string
 		Values         []string
@@ -92,8 +93,55 @@ func makeGpsURL(token string, activityID string) string {
 	return baseURL + "/" + activityID + "/gps?access_token=" + token
 }
 
+func findInterval(metric float64, interval string) time.Duration {
+	switch interval {
+	case "SEC":
+		return time.Duration(metric) * time.Second
+	case "MIN":
+		return time.Duration(metric) * time.Minute
+	default:
+		//assume the most logical GPS measurement interval
+		return time.Duration(metric) * time.Second
+	}
+}
+
+func formatTimeGPS(t time.Time) string {
+	return fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02dZ",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+}
+
+func (nikeActs nikeDataComplete) makeGPX() {
+	//write to the screen while we develop, eventually write to a file with
+	//  the activity number as the file name
+	const longForm = "2006-01-02T15:04:05Z"
+	//Go time expects the refence time to be Mon Jan 2 15:04:05 MST 2006
+	t, _ := time.Parse(longForm, nikeActs.StartTime)
+	s := findInterval(nikeActs.IntervalMetric, nikeActs.IntervalUnit)
+
+	fmt.Println(`<?xml version="1.0" encoding="UTF-8"?>`)
+	fmt.Println(`<gpx creator="Nike2Strava" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
+`)
+	fmt.Println(" <metadata>")
+	fmt.Println("  <time>" + nikeActs.StartTime + "</time>")
+	fmt.Println(" </metadata>")
+	fmt.Println(" <trk>")
+	fmt.Println("  <name>" + nikeActs.StartTime + "</name>")
+	fmt.Println("  <trkseg>")
+	for _, m := range nikeActs.Waypoints {
+		fmt.Println("   <trkpt lat=" + `"` + strconv.FormatFloat(m.Latitude, 'f', 7, 64) + `"` + " lon=" + `"` + strconv.FormatFloat(m.Longitude, 'f', 7, 64) + `">`)
+		fmt.Println("    <ele>" + strconv.FormatFloat(m.Elevation, 'f', 1, 64) + "</ele>")
+		fmt.Println("    <time>" + formatTimeGPS(t) + "</time>")
+		fmt.Println("   </trkpt>")
+		t = t.Add(s)
+	}
+	fmt.Println("  </trkseg>")
+	fmt.Println(" </trk>")
+	fmt.Println("/gpx>")
+}
+
 func (nikeActs nikeDataComplete) printDetails() {
-    fmt.Println("Activity ID:", nikeActs.ActivityId)
+	fmt.Println("Activity ID:", nikeActs.ActivityId)
 	fmt.Println("Distance:", nikeActs.MetricSummary.Distance, "km")
 	fmt.Println("Date:", nikeActs.StartTime)
 	for _, m := range nikeActs.Tags {
@@ -139,7 +187,8 @@ func getDetails(token string, activityID string, debug bool) {
 			json.Unmarshal(body, &nikeActs)
 		}
 	}
-    nikeActs.printDetails()
+	//nikeActs.printDetails()
+	nikeActs.makeGPX()
 }
 
 func wrangleJSON(token string, numRecords int, debug bool) {
@@ -148,9 +197,9 @@ func wrangleJSON(token string, numRecords int, debug bool) {
 
 	if debug {
 		json.Unmarshal(NikeBasic1, &nikeList)
-        fmt.Println("Using Local Test Data")
+		//fmt.Println("Using Local Test Data")
 	} else {
-        fmt.Println("\nUsing live data from Nike+ API\n")
+		fmt.Println("\nUsing live data from Nike+ API\n")
 		url := makeActivityURL(token, numRecords)
 		res, err := http.Get(url)
 

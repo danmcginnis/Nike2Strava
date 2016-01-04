@@ -137,7 +137,7 @@ func (nikeActs nikeDataComplete) makeGPX() {
 	}
 	fmt.Println("  </trkseg>")
 	fmt.Println(" </trk>")
-	fmt.Println("/gpx>")
+	fmt.Println("</gpx>")
 }
 
 func (nikeActs nikeDataComplete) printDetails() {

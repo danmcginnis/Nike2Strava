@@ -1,11 +1,13 @@
 package main
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 	//"log"
 	"html/template"
 )
+
+var userToken string
 
 func echoInput(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method:", r.Method)
@@ -14,19 +16,23 @@ func echoInput(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, nil)
 	} else {
 		r.ParseForm()
-		username := template.HTMLEscapeString(r.Form.Get("username"))
-		password := template.HTMLEscapeString(r.Form.Get("password"))
-		fmt.Println("username:", username)
-		fmt.Println("password:", password)
+		userToken = template.HTMLEscapeString(r.Form.Get("token"))
 	}
 }
 
-
 func main() {
-	wrangleJSON(Token, 20, true)
-	/*http.HandleFunc("/", echoInput)
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	} */
+
+	webDebug := false
+
+	if webDebug {
+		http.HandleFunc("/", echoInput)
+		err := http.ListenAndServe(":8080", nil)
+		if err != nil {
+			log.Fatal("ListenAndServe: ", err)
+		}
+	} else {
+        userToken = Token
+    }
+    
+	wrangleJSON(userToken, 20, true)
 }

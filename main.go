@@ -1,16 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	//"log"
 	"html/template"
 )
 
 var userToken string
 
 func echoInput(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method:", r.Method)
 	if r.Method == "GET" {
 		t, _ := template.ParseFiles("public/index.html")
 		t.Execute(w, nil)

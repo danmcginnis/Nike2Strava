@@ -12,11 +12,9 @@ import (
 
 const baseURL = "https://api.nike.com/v1/me/sport/activities"
 
-//var loginURL = "https://developer.nike.com/content/nike-developer-cq/us/en_us/index/login.html"
-
 type nikeDataSimple struct {
 	Data []struct {
-		ActivityId    string
+		ActivityID    string
 		ActivityType  string
 		StartTime     string
 		Status        string
@@ -36,7 +34,7 @@ type nikeDataComplete struct {
 		Rel  string
 		Href string
 	}
-	ActivityId       string
+	ActivityID       string
 	ActivityType     string
 	StartTime        string
 	ActivityTimeZone string
@@ -75,12 +73,6 @@ type nikeDataComplete struct {
 	}
 }
 
-/*func main() {
-	var nike nikeDataSimple
-	json.Unmarshal([]byte(NikeBasic10), &nike)
-	fmt.Println(nike)
-}*/
-
 func makeActivityURL(token string, count int) string {
 	return baseURL + "?access_token=" + token + "&count=" + strconv.Itoa(count)
 }
@@ -112,7 +104,7 @@ func formatTimeGPS(t time.Time) string {
 }
 
 func (nikeActs nikeDataComplete) makeGPX() {
-	//write to the screen while we develop, eventually write to a file with
+	//todo: write to the screen while we develop, eventually write to a file with
 	//  the activity number as the file name
 	const longForm = "2006-01-02T15:04:05Z"
 	//Go time expects the refence time to be Mon Jan 2 15:04:05 MST 2006
@@ -120,8 +112,7 @@ func (nikeActs nikeDataComplete) makeGPX() {
 	s := findInterval(nikeActs.IntervalMetric, nikeActs.IntervalUnit)
 
 	fmt.Println(`<?xml version="1.0" encoding="UTF-8"?>`)
-	fmt.Println(`<gpx creator="Nike2Strava" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
-`)
+	fmt.Println(`<gpx creator="Nike2Strava" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3">`)
 	fmt.Println(" <metadata>")
 	fmt.Println("  <time>" + nikeActs.StartTime + "</time>")
 	fmt.Println(" </metadata>")
@@ -141,7 +132,7 @@ func (nikeActs nikeDataComplete) makeGPX() {
 }
 
 func (nikeActs nikeDataComplete) printDetails() {
-	fmt.Println("Activity ID:", nikeActs.ActivityId)
+	fmt.Println("Activity ID:", nikeActs.ActivityID)
 	fmt.Println("Distance:", nikeActs.MetricSummary.Distance, "km")
 	fmt.Println("Date:", nikeActs.StartTime)
 	for _, m := range nikeActs.Tags {
@@ -187,7 +178,9 @@ func getDetails(token string, activityID string, debug bool) {
 			json.Unmarshal(body, &nikeActs)
 		}
 	}
-	//nikeActs.printDetails()
+	if !debug {
+		nikeActs.printDetails()
+	}
 	nikeActs.makeGPX()
 }
 
@@ -197,9 +190,9 @@ func wrangleJSON(token string, numRecords int, debug bool) {
 
 	if debug {
 		json.Unmarshal(NikeBasic1, &nikeList)
-		//fmt.Println("Using Local Test Data")
+		log.Print("Using Local Test Data")
 	} else {
-		fmt.Println("\nUsing live data from Nike+ API\n")
+		log.Print("\nUsing live data from Nike+ API\n")
 		url := makeActivityURL(token, numRecords)
 		res, err := http.Get(url)
 
@@ -217,7 +210,7 @@ func wrangleJSON(token string, numRecords int, debug bool) {
 
 	for _, m := range nikeList.Data {
 		if m.ActivityType == "RUN" {
-			getDetails(token, m.ActivityId, debug)
+			getDetails(token, m.ActivityID, debug)
 		}
 	}
 }

@@ -1,4 +1,5 @@
-package main
+//Handles moving run data from Nike+ into Strava
+package nike2strava
 
 import (
 	"encoding/json"

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+    "log"
 )
 
 const baseURL = "https://api.nike.com/v1/me/sport/activities"

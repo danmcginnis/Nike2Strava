@@ -4,6 +4,7 @@ package nike2strava
 import (
 	"net/http"
 	"html/template"
+    "log"
 )
 
 var userToken string

@@ -76,15 +76,15 @@ type nikeDataComplete struct {
 }
 
 func makeActivityURL(token string, count int) string {
-	return baseURL + "?access_token=" + token + "&count=" + strconv.Itoa(count)
+	return fmt.Sprintf("%s?access_token=%s&count=%d", baseURL, token, count)
 }
 
 func makeDetailsURL(token string, activityID string) string {
-	return baseURL + "/" + activityID + "?access_token=" + token
+	return fmt.Sprintf("%s/%s?access_token=%s", baseURL, activityID, token)
 }
 
 func makeGpsURL(token string, activityID string) string {
-	return baseURL + "/" + activityID + "/gps?access_token=" + token
+	return fmt.Sprintf("%s/%s/gps?access_token=%s", baseURL, activityID, token)
 }
 
 func findInterval(metric float64, interval string) time.Duration {
